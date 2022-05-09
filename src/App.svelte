@@ -10,9 +10,10 @@
     resolution = "256x144",
     inFilename = "video.mp4",
     outFilename = "lowres.mp4",
-    isProc = false,
-    sError = "",
-    sMessage = "",
+    isRun = false,
+    isVertical = false,
+    logErr = "",
+    logMsg = "",
     sProgress = 0,
     resultUrl = "";
 
@@ -39,13 +40,17 @@
   }
 
   function cleanup() {
-    sMessage = "";
-    sError = "";
+    logMsg = "";
+    logErr = "";
     resultUrl = "";
     inFile = null;
-    isProc = false;
+    isRun = false;
     URL.revokeObjectURL(resultUrl);
     initFfmpeg();
+  }
+
+  function reverseRatio(ratio) {
+    ratio.split("x").reverse().join("x");
   }
 
   const fetchVideo = async () => {
@@ -65,43 +70,43 @@
   };
 
   const submitAction = async () => {
-    sError = "";
-    isProc = true;
+    logErr = "";
+    isRun = true;
     if (!inFile && !inUrl) {
-      sError = "No file/url selected";
-      isProc = false;
+      logErr = "No file/url selected";
+      isRun = false;
     } else {
       try {
         if (!inFile) await fetchVideo();
       } catch (e) {
         console.error(e);
-        sError =
+        logErr =
           "Can`t fetch video file from remote URL\nMake sure source URL correct or allowing cross-origin requests";
-        isProc = false;
+        isRun = false;
         return;
       }
       const start = Date.now();
-      sMessage = "Loading neccessary toolkit";
+      logMsg = "Loading neccessary toolkit";
       if (!ffmpeg.isLoaded()) {
-        sMessage = "Loading neccessary toolkit (May take few minutes for first time)";
+        logMsg = "Loading neccessary toolkit (Take few minutes for first time)";
         const init = await ffmpeg.load().catch((e) => e);
         if (init?.message) {
           console.error(init.message);
-          sError = "Error loading neccessary toolkit. Maybe reload and try once again?";
-          isProc = false;
+          logErr = "Error loading neccessary toolkit. Reload and try again?";
+          isRun = false;
           return;
         }
       }
-      sMessage = "Processing video...";
+      logMsg = "Processing video...";
       ffmpeg.FS("writeFile", inFilename, await fetchFile(inFile));
       await ffmpeg.run(
         ...[
           "-i",
           inFilename,
-          "-s",
-          resolution,
           "-c:v",
-          "libx264",  
+          "libx264",
+          "-s",
+          !isVertical ? resolution : reverseRatio(resolution),
           "-crf",
           crf.toString(),
           outFilename,
@@ -112,12 +117,12 @@
         resultUrl = URL.createObjectURL(
           new Blob([data.buffer], { type: "video/mp4" })
         );
-        sMessage = `Done in ${(Date.now() - start) / 1000} seconds`;
+        logMsg = `Done in ${(Date.now() - start) / 1000} seconds`;
       } catch (e) {
         console.error(e);
         cleanup();
-        sError = "Make sure you choose correct video format";
-        isProc = false;
+        logErr = "Make sure you choose correct video format";
+        isRun = false;
       }
     }
   };
@@ -147,13 +152,13 @@
       </div>
       {#if !resultUrl}
         <input
-          class="mb-4 text-sm"
+          class="mb-4"
           id="file_input"
           type="file"
           on:change={(e) => onFileUploaded(e)}
         />
         <input
-          class="mb-4 text-sm block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+          class="mb-4 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
           type="url"
           placeholder="Or paste video URL"
           bind:value={inUrl}
@@ -212,7 +217,7 @@
             </div>
           </div>
         </div>
-        <div class="mb-8">
+        <div class="mb-4">
           <div class="flex justify-between">
             <label for="minmax-range">Quality</label>
             <span>{isLowres()}</span>
@@ -225,6 +230,15 @@
             max="64"
             bind:value={crf}
           />
+        </div>
+        <div class="flex items-center mb-8 space-x-2">
+          <input
+          class="w-4 h-4 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600"
+            id="isVertical"
+            type="checkbox"
+            bind:checked={isVertical}
+          />
+          <label for="isVertical">Video have vertical ratio</label>
         </div>
         {:else}
         <div class="w-full mb-12">
@@ -244,9 +258,9 @@
           </button>
         </div>
       {/if}
-      {#if !isProc}
+      {#if !isRun}
         <button
-          class="relative w-full inline-flex items-center justify-center p-0.5 mb-4 overflow-hidden text-sm rounded-lg group bg-blue-500 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:saturate-50 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800"
+          class="relative w-full inline-flex items-center justify-center p-0.5 mb-4 overflow-hidden rounded-lg group bg-blue-500 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:saturate-50 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800"
           disabled={!inFile && !inUrl}
           on:click={submitAction}
         >
@@ -260,7 +274,7 @@
         </button>
       {:else}
         <div class="flex justify-between mb-1">
-          <span>{sMessage}</span>
+          <span>{logMsg}</span>
           <span>{sProgress.toFixed(0)}%</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
@@ -271,19 +285,19 @@
         </div>
       {/if}
     </div>
-    {#if sError}
-      <div class="fixed top-8 max-w-xl">
+    {#if logErr}
+      <div class="fixed top-8 max-w-sm sm:max-w-md md:max-w-lg">
         <div class="flex p-4 rounded-lg bg-red-200 text-red-800" role="alert" id="alert">
           <svg class="inline flex-shrink-0 mr-3 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
           <div>
             <h1 class="font-bold">Failed!</h1>
-            <p class="text-sm">{sError}</p>
+            <p>{logErr}</p>
           </div>
           <button
             class="ml-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg focus:ring-2 inline-flex h-8 w-8 bg-red-200 text-red-600 hover:bg-red-300"
             type="button"
             aria-label="Close"
-            on:click={() => {sError = ""}}
+            on:click={() => {logErr = ""}}
           >
             <span class="sr-only">Close</span>
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
