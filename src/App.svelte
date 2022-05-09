@@ -50,7 +50,7 @@
   }
 
   function reverseRatio(ratio) {
-    ratio.split("x").reverse().join("x");
+    return ratio.split("x").reverse().join("x");
   }
 
   const fetchVideo = async () => {
