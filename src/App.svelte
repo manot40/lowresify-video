@@ -87,7 +87,7 @@
         const init = await ffmpeg.load().catch((e) => e);
         if (init?.message) {
           console.error(init.message);
-          sError = "Error loading neccessary toolkit";
+          sError = "Error loading neccessary toolkit. Maybe reload and try once again?";
           isProc = false;
           return;
         }
