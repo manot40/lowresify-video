@@ -58,6 +58,12 @@
     blobStore.dispose();
   }
 
+  function handleError(err) {
+    cleanup();
+    console.error(err);
+    logErr = err.message;
+  }
+
   const fetchVideo = async () => {
     logMsg = "Fetching video file...";
     const isUrl = /^http(s)?:\/\//.test(inUrl);
@@ -76,9 +82,7 @@
     try {
       if (inUrl) await fetchVideo();
     } catch (err) {
-      cleanup();
-      console.error(err);
-      logErr = err.message;
+      handleError(err);
       return;
     }
 
@@ -100,9 +104,9 @@
       logMsg = "Loading neccessary toolkit (Take few minutes for first time)";
       const init = await ffmpeg.load().catch((e) => e);
       if (init?.message) {
-        cleanup();
-        console.error(init.message);
-        logErr = "Error loading neccessary toolkit. Reload and try again?";
+        handleError({
+          message: "Error loading neccessary toolkit. Reload and try again?",
+        });
         return;
       }
     }
@@ -130,10 +134,8 @@
       blobStore.setBlob([data.buffer], { type: "video/mp4" });
       resultUrl = blobStore.getURL();
       logMsg = `Done in ${(Date.now() - start) / 1000} seconds`;
-    } catch (e) {
-      cleanup();
-      console.error(e);
-      logErr = "Make sure you choose correct video format";
+    } catch (err) {
+      handleError(err);
     }
   };
 
