@@ -66,13 +66,20 @@
 
   const fetchVideo = async () => {
     logMsg = "Fetching video file...";
+    
     const isUrl = /^http(s)?:\/\//.test(inUrl);
     if (!isUrl) throw new Error("Invalid URL entered!");
+    
     const res = await fetch(inUrl);
+    const isVideo = /^video/i.test(res.headers.get("Content-Type"));
     if (res.status < 400) {
-      const blob = await res.blob();
-      inFilename = "video.mp4";
-      inFile = new Uint8Array(await readFromBlobOrFile(blob));
+      if (isVideo) {
+        const blob = await res.blob();
+        inFilename = "video.mp4";
+        inFile = new Uint8Array(await readFromBlobOrFile(blob));
+      } else {
+        throw new Error("Invalid video type. Accepted type: mp4, webm, avi, mkv");
+      }
     } else {
       throw new Error("Remote server refusing to give required resource");
     }
