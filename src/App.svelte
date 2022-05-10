@@ -49,7 +49,6 @@
   function cleanup() {
     logMsg = "";
     logErr = "";
-    inFile = null;
     isRun = false;
     resultUrl = "";
     blobStore.dispose();
@@ -151,7 +150,6 @@
       <div class="-mt-12 mb-24 text-center select-none">
         <h1 class="text-[3.25rem] md:text-[4.8rem] font-glitch">LowResify</h1>
       </div>
-
       {#if !resultUrl}
         <Form
           bind:inFilename
@@ -173,7 +171,6 @@
           </Button>
         </div>
       {/if}
-
       {#if !isRun}
         <Button
           disabled={!inFile && !inUrl}
