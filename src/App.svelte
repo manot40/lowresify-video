@@ -135,7 +135,9 @@
       resultUrl = blobStore.getURL();
       logMsg = `Done in ${(Date.now() - start) / 1000} seconds`;
     } catch (err) {
-      handleError(err);
+      handleError({
+        message: "Make sure resource have correct video format"
+      });
     }
   };
 
