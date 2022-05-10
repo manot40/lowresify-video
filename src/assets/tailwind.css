@@ -12,7 +12,7 @@ input[type="checkbox"]:checked {
 }
 @layer base {
   body {
-    @apply bg-gray-900 text-gray-200 text-sm overflow-hidden;
+    @apply bg-gray-900 text-gray-200 text-sm;
   }
   input[type="file"] {
     @apply hidden;
