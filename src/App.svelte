@@ -73,7 +73,7 @@
 
     // Verify if the file from URL is a video
     try {
-      if (!inFile) await fetchVideo();
+      if (inUrl) await fetchVideo();
       inFilename = "video.mp4";
     } catch (err) {
       cleanup();
