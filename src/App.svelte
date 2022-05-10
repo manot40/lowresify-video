@@ -60,7 +60,7 @@
 
   function handleError(err) {
     cleanup();
-    console.error(err);
+    console.error(err.message);
     logErr = err.message;
   }
 
@@ -68,10 +68,14 @@
     logMsg = "Fetching video file...";
     const isUrl = /^http(s)?:\/\//.test(inUrl);
     if (!isUrl) throw new Error("Invalid URL entered!");
-    const video = await fetch(inUrl);
-    const blob = await video.blob();
-    inFilename = "video.mp4";
-    inFile = new Uint8Array(await readFromBlobOrFile(blob));
+    const res = await fetch(inUrl);
+    if (res.status < 400) {
+      const blob = await res.blob();
+      inFilename = "video.mp4";
+      inFile = new Uint8Array(await readFromBlobOrFile(blob));
+    } else {
+      throw new Error("Remote server refusing to give required resource");
+    }
   };
 
   const submitAction = async () => {
