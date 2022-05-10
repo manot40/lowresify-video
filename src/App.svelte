@@ -33,7 +33,6 @@
         corePath: "/script/ffmpeg-core.js",
       });
       ffmpeg.setProgress(({ ratio }) => {
-        console.log(ratio);
         if (ratio >= 0 && ratio <= 1) {
           progress = ratio * 100;
         }
@@ -46,7 +45,12 @@
     }
   });
 
-  function cleanup() {
+  function cleanup(all) {
+    if (all) {
+      inFilename = "";
+      inFile = null;
+      inUrl = "";
+    }
     logMsg = "";
     logErr = "";
     isRun = false;
@@ -166,7 +170,11 @@
           <Button className="w-full mb-3" on:click={download}>
             Download Video
           </Button>
-          <Button type="secondary" className="w-full" on:click={cleanup}>
+          <Button
+            type="secondary"
+            className="w-full"
+            on:click={() => cleanup(true)
+          }>
             Lowresify Another Video
           </Button>
         </div>
