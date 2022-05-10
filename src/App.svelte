@@ -64,6 +64,7 @@
     if (!isUrl) throw new Error("Invalid URL entered!");
     const video = await fetch(inUrl);
     const blob = await video.blob();
+    inFilename = "video.mp4";
     inFile = new Uint8Array(await readFromBlobOrFile(blob));
   };
 
@@ -74,7 +75,6 @@
     // Verify if the file from URL is a video
     try {
       if (inUrl) await fetchVideo();
-      inFilename = "video.mp4";
     } catch (err) {
       cleanup();
       console.error(err);
