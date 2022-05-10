@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@ffmpeg/core": "^0.10.0",
-    "@ffmpeg/ffmpeg": "^0.10.1",
-    "flowbite": "^1.4.5"
+    "@ffmpeg/ffmpeg": "^0.10.1"
   }
 }

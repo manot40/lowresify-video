@@ -1,5 +1,4 @@
 import defaultTheme from 'tailwindcss/defaultTheme.js';
-import flowbite from 'flowbite/plugin.js';
 
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -12,5 +11,5 @@ export default {
       },
     },
   },
-  plugins: [ flowbite ],
+  plugins: [],
 }
